@@ -1,11 +1,33 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import type GranolaSyncPlugin from "./main";
 
+export type SyncFrequency = "manual" | "startup" | "1m" | "15m" | "30m" | "60m" | "12h";
+
+export const SYNC_FREQUENCY_OPTIONS: Record<SyncFrequency, string> = {
+	manual: "Manual only (command palette)",
+	startup: "Sync on startup only",
+	"1m": "Every 1 minute",
+	"15m": "Every 15 minutes",
+	"30m": "Every 30 minutes",
+	"60m": "Every 60 minutes",
+	"12h": "Every 12 hours",
+};
+
+export const SYNC_FREQUENCY_MS: Record<SyncFrequency, number | null> = {
+	manual: null,
+	startup: null,
+	"1m": 60 * 1000,
+	"15m": 15 * 60 * 1000,
+	"30m": 30 * 60 * 1000,
+	"60m": 60 * 60 * 1000,
+	"12h": 12 * 60 * 60 * 1000,
+};
+
 export interface GranolaSyncSettings {
 	folderPath: string;
 	filenamePattern: string;
 	templatePath: string;
-	autoSyncOnStartup: boolean;
+	syncFrequency: SyncFrequency;
 	skipExistingNotes: boolean;
 	matchAttendeesByEmail: boolean;
 }
@@ -14,7 +36,7 @@ export const DEFAULT_SETTINGS: GranolaSyncSettings = {
 	folderPath: "Meetings",
 	filenamePattern: "{date} {title}",
 	templatePath: "Templates/Granola.md",
-	autoSyncOnStartup: false,
+	syncFrequency: "15m",
 	skipExistingNotes: true,
 	matchAttendeesByEmail: true,
 };
@@ -30,6 +52,18 @@ export class GranolaSyncSettingTab extends PluginSettingTab {
 	override display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
+
+		new Setting(containerEl)
+			.setName("Sync now")
+			.setDesc("Manually sync meetings from Granola")
+			.addButton((button) =>
+				button
+					.setButtonText("Sync now")
+					.setCta()
+					.onClick(() => {
+						void this.plugin.syncMeetings();
+					})
+			);
 
 		new Setting(containerEl)
 			.setName("Folder path")
@@ -71,16 +105,20 @@ export class GranolaSyncSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Auto sync on startup")
-			.setDesc("Automatically sync meetings when Obsidian opens")
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.autoSyncOnStartup)
+			.setName("Sync frequency")
+			.setDesc("How often to automatically sync meetings from Granola")
+			.addDropdown((dropdown) => {
+				for (const [value, label] of Object.entries(SYNC_FREQUENCY_OPTIONS)) {
+					dropdown.addOption(value, label);
+				}
+				dropdown
+					.setValue(this.plugin.settings.syncFrequency)
 					.onChange(async (value) => {
-						this.plugin.settings.autoSyncOnStartup = value;
+						this.plugin.settings.syncFrequency = value as SyncFrequency;
 						await this.plugin.saveSettings();
-					})
-			);
+						this.plugin.setupSyncInterval();
+					});
+			});
 
 		new Setting(containerEl)
 			.setName("Skip existing notes")

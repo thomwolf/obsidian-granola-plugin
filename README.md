@@ -6,11 +6,12 @@ This plugin reads directly from Granola's local cache file—no API calls or aut
 
 ## Features
 
-- **One-click sync**: Sync all your Granola meetings to Obsidian notes
+- **Auto-sync**: Automatically sync meetings at configurable intervals (1m to 12h)
 - **Template-based**: Customize output format with your own template
 - **Local-first**: Reads from Granola's local cache, no network requests
 - **Smart deduplication**: Tracks meetings by ID to avoid duplicates
 - **Preserve edits**: Option to skip existing notes so your local changes aren't overwritten
+- **Attendee linking**: Automatically link attendees to existing notes by email
 
 ## Installation
 
@@ -27,7 +28,7 @@ This plugin reads directly from Granola's local cache file—no API calls or aut
 
 ## Usage
 
-1. **Sync meetings**: Click the refresh icon in the left ribbon, or use command palette: "Granola Simple: Sync meetings"
+1. **Sync meetings**: Click the refresh icon in the left ribbon, use the command palette ("Granola Simple: Sync meetings"), or click "Sync now" in settings
 2. **Configure settings**: Settings → Granola Simple
 
 ## Settings
@@ -37,8 +38,9 @@ This plugin reads directly from Granola's local cache file—no API calls or aut
 | Folder path | `Meetings` | Where to save meeting notes |
 | Filename pattern | `{date} {title}` | Pattern for filenames. Supports `{date}`, `{title}`, `{id}` |
 | Template path | `Templates/Granola.md` | Path to your template file |
-| Auto sync on startup | Off | Automatically sync when Obsidian opens |
+| Sync frequency | Every 15 minutes | How often to sync. Options: Manual only, On startup, 1m, 15m, 30m, 60m, 12h |
 | Skip existing notes | On | Don't overwrite notes you've edited |
+| Match attendees by email | On | Link attendees to notes with matching email in frontmatter |
 
 ## Template Variables
 

@@ -3,6 +3,7 @@ import {
 	GranolaSyncSettings,
 	DEFAULT_SETTINGS,
 	GranolaSyncSettingTab,
+	SYNC_FREQUENCY_MS,
 } from "./settings";
 import {
 	readGranolaCache,
@@ -14,6 +15,7 @@ import { loadTemplate, applyTemplate, generateFilename } from "./template";
 export default class GranolaSyncPlugin extends Plugin {
 	settings: GranolaSyncSettings = DEFAULT_SETTINGS;
 	private isSyncing = false;
+	private syncIntervalId: number | null = null;
 
 	override async onload(): Promise<void> {
 		await this.loadSettings();
@@ -46,21 +48,47 @@ export default class GranolaSyncPlugin extends Plugin {
 		// Add settings tab
 		this.addSettingTab(new GranolaSyncSettingTab(this.app, this));
 
-		// Auto sync on startup if enabled
-		if (this.settings.autoSyncOnStartup) {
-			this.app.workspace.onLayoutReady(() => {
+		// Handle startup sync and intervals
+		this.app.workspace.onLayoutReady(() => {
+			// Sync on startup if not manual-only
+			if (this.settings.syncFrequency !== "manual") {
 				void this.syncMeetings();
-			});
-		}
+			}
+			// Set up recurring sync interval
+			this.setupSyncInterval();
+		});
 	}
 
 	override onunload(): void {
-		// Nothing to clean up
+		this.clearSyncInterval();
+	}
+
+	setupSyncInterval(): void {
+		this.clearSyncInterval();
+		const intervalMs = SYNC_FREQUENCY_MS[this.settings.syncFrequency];
+		if (intervalMs) {
+			this.syncIntervalId = window.setInterval(() => {
+				void this.syncMeetings();
+			}, intervalMs);
+			this.registerInterval(this.syncIntervalId);
+		}
+	}
+
+	private clearSyncInterval(): void {
+		if (this.syncIntervalId !== null) {
+			window.clearInterval(this.syncIntervalId);
+			this.syncIntervalId = null;
+		}
 	}
 
 	async loadSettings(): Promise<void> {
-		const data = await this.loadData() as Partial<GranolaSyncSettings> | null;
+		const data = await this.loadData() as Partial<GranolaSyncSettings> & { autoSyncOnStartup?: boolean } | null;
 		this.settings = { ...DEFAULT_SETTINGS, ...data };
+
+		// Migrate old autoSyncOnStartup setting
+		if (data?.autoSyncOnStartup !== undefined && !data.syncFrequency) {
+			this.settings.syncFrequency = data.autoSyncOnStartup ? "startup" : "manual";
+		}
 	}
 
 	async saveSettings(): Promise<void> {
