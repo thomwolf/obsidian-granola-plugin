@@ -35,4 +35,4 @@ jobs:
           gh release create "$tag" \
             --title="$tag" \
             --generate-notes \
-            release/granola-simple-sync.zip
+            release/granola-meetings-simple-sync.zip
