@@ -1,4 +1,4 @@
-# Granola Simple for Obsidian
+# Obsidian Plugin: Granola Meetings Simple Sync
 
 Sync your [Granola](https://granola.ai) meeting notes to Obsidian.
 
@@ -13,11 +13,13 @@ This plugin reads directly from Granola's local cache file—no API calls or aut
 - **Preserve edits**: Option to skip existing notes so your local changes aren't overwritten
 - **Attendee linking**: Automatically link attendees to existing notes by email
 
+There are other ([1](https://github.com/dannymcc/Granola-to-Obsidian), [2](https://github.com/tomelliot/obsidian-granola-sync)) Granola plugins for Obsidian, but I found their implementation lacking for my needs. They either had unnecessary complexity or didn't support features like bringing in private notes, linking to attendee Person notes, or customizing the note template/frontmatter. This plugin fits my workflow better.
+
 ## Installation
 
 ### From Obsidian Community Plugins (Recommended)
 1. Open Settings → Community plugins
-2. Search for "Granola Simple"
+2. Search for "Granola Meetings Simple Sync
 3. Click Install, then Enable
 
 ### Manual Installation
@@ -77,6 +79,7 @@ If no template exists, the plugin creates this default:
 ```markdown
 ---
 granola_id: {{granola_id}}
+granola_url: {{granola_url}}
 title: "{{granola_title}}"
 date: {{granola_date}}
 created: {{granola_created}}
@@ -87,16 +90,17 @@ tags:
   - meeting
   - granola
 ---
-
-## Notes
+{{#granola_private_notes}}## Notes
 
 {{granola_private_notes}}
-
+{{/granola_private_notes}}
 {{granola_enhanced_notes}}
+{{#granola_transcript}}
 
 ## Transcript
 
 {{granola_transcript}}
+{{/granola_transcript}}
 ```
 
 ## Requirements
