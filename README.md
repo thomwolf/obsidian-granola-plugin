@@ -17,10 +17,7 @@ There are other ([1](https://github.com/dannymcc/Granola-to-Obsidian), [2](https
 
 ## Installation
 
-### From Obsidian Community Plugins (Recommended)
-1. Open Settings → Community plugins
-2. Search for "Granola Meetings Simple Sync
-3. Click Install, then Enable
+Hopefully Obsidian directory inclusion will come soon. In the meantime, install manually.
 
 ### Manual Installation
 1. Download the zip from the [latest release](https://github.com/philfreo/obsidian-granola-simple-plugin/releases)
