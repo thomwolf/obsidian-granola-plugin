@@ -27,12 +27,9 @@ There are other ([1](https://github.com/dannymcc/Granola-to-Obsidian), [2](https
 2. Extract to `<vault>/.obsidian/plugins/`
 3. Enable the plugin in Settings → Community plugins
 
-## Usage
-
-1. **Sync meetings**: Click the ribbon icon, use the command palette ("Granola Simple: Sync meetings"), or click "Sync now" in settings
-2. **Configure settings**: Settings → Granola Simple
-
 ## Settings
+
+![Settings screenshot](docs/options-screenshot.png)
 
 | Setting | Default | Description |
 |---------|---------|-------------|
@@ -43,6 +40,10 @@ There are other ([1](https://github.com/dannymcc/Granola-to-Obsidian), [2](https
 | Show ribbon icon | On | Show a sync button in the left sidebar |
 | Skip existing notes | On | Don't overwrite notes you've edited |
 | Match attendees by email | On | Link attendees to notes with matching email in frontmatter |
+
+## Usage
+
+1. **Sync meetings**: By default your meetings will be synced every 15 minutes. This setting is customizable, and you can also trigger a sync by clicking the ribbon icon, using the command palette ("Granola Meetings Simple Sync: Sync meetings"), click "Sync now" in settings. Or, do nothing and allow automatic sync to work.
 
 ## Template Variables
 
