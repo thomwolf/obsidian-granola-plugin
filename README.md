@@ -118,9 +118,16 @@ npm install
 # Build (watch mode)
 npm run dev
 
-# Build for production
+# Build (for production)
 npm run build
+
+# Package for release
+npm run package
 ```
+
+### Releasing
+
+Per [Obsidian's guidelines](https://github.com/obsidianmd/obsidian-sample-plugin), tags should **not** use a `v` prefix (use `1.0.0`, not `v1.0.0`).
 
 ## License
 
