@@ -185,9 +185,7 @@ export default class GranolaSyncPlugin extends Plugin {
 		if (this.settings.matchAttendeesByEmail) {
 			for (const file of files) {
 				const fileCache = this.app.metadataCache.getFileCache(file);
-				// Frontmatter values have unknown type
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const emails = fileCache?.frontmatter?.emails;
+				const emails: unknown = fileCache?.frontmatter?.emails;
 				if (Array.isArray(emails)) {
 					for (const email of emails) {
 						if (typeof email === "string") {

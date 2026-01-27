@@ -24,7 +24,10 @@ export default tseslint.config(
 		// Allow "Granola" as a brand name in sentence case checks
 		plugins: { obsidianmd },
 		rules: {
-			"obsidianmd/ui/sentence-case": ["error", { brands: ["Granola", "Obsidian"] }],
+			"obsidianmd/ui/sentence-case": [
+				"error",
+				{ brands: ["Granola", "Obsidian"] },
+			],
 		},
 	},
 	globalIgnores([
@@ -34,5 +37,5 @@ export default tseslint.config(
 		"eslint.config.mts",
 		"main.js",
 		"versions.json",
-	])
+	]),
 );

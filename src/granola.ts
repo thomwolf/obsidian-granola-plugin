@@ -51,6 +51,11 @@ export interface GranolaCache {
 	transcripts: Record<string, TranscriptEntry[]>;
 }
 
+function parseJson<T>(json: string): T {
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-return -- centralizes unsafe JSON.parse cast
+	return JSON.parse(json);
+}
+
 function getGranolaDir(): string {
 	if (process.platform === "win32") {
 		return join(homedir(), "AppData/Roaming/Granola");
@@ -64,12 +69,8 @@ function getGranolaDir(): string {
 export function getCurrentUserId(): string | null {
 	try {
 		const authFile = join(getGranolaDir(), "supabase.json");
-		// Parsing external JSON file with unknown structure
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-		const auth = JSON.parse(readFileSync(authFile, "utf-8"));
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-		const userInfo = JSON.parse(auth.user_info || "{}");
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+		const auth = parseJson<{ user_info?: string }>(readFileSync(authFile, "utf-8"));
+		const userInfo = parseJson<{ id?: string }>(auth.user_info || "{}");
 		return userInfo.id || null;
 	} catch (e) {
 		console.debug("Granola: could not read user auth", e);
@@ -81,18 +82,18 @@ export function readGranolaCache(): GranolaCache | null {
 	try {
 		const cacheFile = join(getGranolaDir(), "cache-v3.json");
 		const raw = readFileSync(cacheFile, "utf-8");
-		// Parsing external JSON cache file with unknown structure
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-		const data = JSON.parse(raw);
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-		const cache = JSON.parse(data.cache);
+		const data = parseJson<{ cache?: string }>(raw);
+		const cache = parseJson<{
+			state?: {
+				documents?: Record<string, GranolaDocument>;
+				documentPanels?: Record<string, Record<string, GranolaPanel>>;
+				transcripts?: Record<string, TranscriptEntry[]>;
+			};
+		}>(data.cache || "{}");
 		return {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-			documents: cache.state.documents || {},
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-			documentPanels: cache.state.documentPanels || {},
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-			transcripts: cache.state.transcripts || {},
+			documents: cache.state?.documents || {},
+			documentPanels: cache.state?.documentPanels || {},
+			transcripts: cache.state?.transcripts || {},
 		};
 	} catch (e) {
 		console.debug("Granola: could not read cache", e);
@@ -107,9 +108,7 @@ export function prosemirrorToMarkdown(
 ): string {
 	if (!doc?.content?.length) return "";
 	try {
-		// Cast to any since the ProseMirror structure from Granola is compatible
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-		return renderToMarkdown({ content: doc as any, extensions });
+		return renderToMarkdown({ content: doc as unknown as Parameters<typeof renderToMarkdown>[0]["content"], extensions });
 	} catch (e) {
 		console.debug("Granola: could not convert ProseMirror to markdown", e);
 		return "";
