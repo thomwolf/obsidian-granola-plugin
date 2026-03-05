@@ -18,10 +18,18 @@ There are other ([1](https://github.com/dannymcc/Granola-to-Obsidian), [2](https
 
 ## Installation
 
-Hopefully Obsidian directory inclusion will come soon. In the meantime, install manually.
+Hopefully Obsidian community plugin directory inclusion will come soon. In the meantime:
+
+### Install via BRAT (recommended)
+1. Install the [BRAT plugin](https://github.com/TfTHacker/obsidian42-brat) from Obsidian's community plugins
+2. In BRAT settings, click **Add Beta plugin**
+3. Enter `philfreo/obsidian-granola-plugin`
+4. Enable the plugin in Settings → Community plugins
+
+BRAT will automatically keep the plugin updated.
 
 ### Manual Installation
-1. Download the zip from the [latest release](https://github.com/philfreo/obsidian-granola-simple-plugin/releases)
+1. Download the zip from the [latest release](https://github.com/philfreo/obsidian-granola-plugin/releases)
 2. Extract to `<vault>/.obsidian/plugins/`
 3. Enable the plugin in Settings → Community plugins
 
@@ -107,7 +115,8 @@ tags:
 
 {{granola_private_notes}}
 {{/granola_private_notes}}
-{{#granola_enhanced_notes}}
+{{#granola_enhanced_notes}}## Summary
+
 {{granola_enhanced_notes}}
 {{/granola_enhanced_notes}}
 {{#granola_transcript}}
