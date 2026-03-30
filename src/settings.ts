@@ -40,6 +40,7 @@ export interface GranolaSyncSettings {
 	matchAttendeesByEmail: boolean;
 	syncTimeRange: SyncTimeRange;
 	syncTranscripts: boolean;
+	taskOwnerName: string;
 }
 
 export const DEFAULT_SETTINGS: GranolaSyncSettings = {
@@ -52,6 +53,7 @@ export const DEFAULT_SETTINGS: GranolaSyncSettings = {
 	matchAttendeesByEmail: true,
 	syncTimeRange: "last_30_days",
 	syncTranscripts: false,
+	taskOwnerName: "",
 };
 
 export class GranolaSyncSettingTab extends PluginSettingTab {
@@ -236,6 +238,37 @@ export class GranolaSyncSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.matchAttendeesByEmail = value;
 						await this.plugin.saveSettings();
+					})
+			);
+
+		// --- Tasks section ---
+		new Setting(containerEl).setName("Tasks").setHeading();
+
+		new Setting(containerEl)
+			.setName("Task owner name")
+			.setDesc(
+				"When this name appears in a Next Steps item, it will be converted to a task checkbox (- [ ]). Leave empty to disable."
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("e.g. Thomas")
+					.setValue(this.plugin.settings.taskOwnerName)
+					.onChange(async (value) => {
+						this.plugin.settings.taskOwnerName = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Reprocess all notes")
+			.setDesc(
+				"Scan all synced notes in the Granola folder and convert matching Next Steps items to task checkboxes."
+			)
+			.addButton((button) =>
+				button
+					.setButtonText("Reprocess all notes")
+					.onClick(() => {
+						void this.plugin.reprocessAllNotes();
 					})
 			);
 	}

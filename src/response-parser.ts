@@ -139,6 +139,41 @@ export function parseGranolaDate(dateStr: string): { isoDate: string; time: stri
 }
 
 /**
+ * Convert bullet points in "Next Steps" sections to Obsidian tasks when they mention the owner name.
+ * Finds any heading containing "next steps" (case-insensitive) and converts matching bullets to `- [ ]`.
+ * Idempotent: skips lines already formatted as `- [ ]` or `- [x]`.
+ */
+export function convertNextStepsTasks(content: string, ownerName: string): string {
+	if (!ownerName || !content) return content;
+
+	const escapedName = ownerName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	const nameRegex = new RegExp(`\\b${escapedName}\\b`, "i");
+	const lines = content.split("\n");
+	let inNextStepsSection = false;
+
+	return lines
+		.map((line) => {
+			if (/^#{1,6}\s/.test(line)) {
+				inNextStepsSection = /next steps/i.test(line);
+				return line;
+			}
+
+			if (!inNextStepsSection) return line;
+
+			// Match unordered (- / *) or ordered (1.) bullets, but skip existing task checkboxes
+			const bulletMatch = line.match(/^(\s*)([-*]|\d+\.)\s+(?!\[[ xX]\])/);
+			if (bulletMatch && nameRegex.test(line)) {
+				const indent = bulletMatch[1];
+				const text = line.replace(/^\s*([-*]|\d+\.)\s+/, "");
+				return `${indent}- [ ] ${text}`;
+			}
+
+			return line;
+		})
+		.join("\n");
+}
+
+/**
  * Build a MeetingData object from parsed API responses.
  */
 export function buildMeetingData(

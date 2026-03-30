@@ -12,6 +12,7 @@ import {
 	parseMeetingsResponse,
 	parseTranscriptResponse,
 	buildMeetingData,
+	convertNextStepsTasks,
 } from "./response-parser";
 import { loadTemplate, applyTemplate, generateFilename } from "./template";
 
@@ -188,6 +189,40 @@ export default class GranolaSyncPlugin extends Plugin {
 		await this.saveData(this.pluginData);
 	}
 
+	async reprocessAllNotes(): Promise<void> {
+		const ownerName = this.settings.taskOwnerName;
+		if (!ownerName) {
+			new Notice("Set a 'Task owner name' in settings first.");
+			return;
+		}
+
+		const folderPath = normalizePath(this.settings.folderPath || DEFAULT_SETTINGS.folderPath);
+		const files = this.app.vault.getMarkdownFiles();
+		let filesChanged = 0;
+		let tasksConverted = 0;
+
+		for (const file of files) {
+			if (!file.path.startsWith(folderPath + "/")) continue;
+			const fileCache = this.app.metadataCache.getFileCache(file);
+			if (!fileCache?.frontmatter?.granola_id) continue;
+
+			const original = await this.app.vault.read(file);
+			const updated = convertNextStepsTasks(original, ownerName);
+			if (updated !== original) {
+				// Count newly added task checkboxes
+				const before = (original.match(/^[ \t]*- \[ \] /gm) ?? []).length;
+				const after = (updated.match(/^[ \t]*- \[ \] /gm) ?? []).length;
+				tasksConverted += after - before;
+				await this.app.vault.modify(file, updated);
+				filesChanged++;
+			}
+		}
+
+		new Notice(
+			`Reprocessed ${filesChanged} note${filesChanged !== 1 ? "s" : ""}, converted ${tasksConverted} action item${tasksConverted !== 1 ? "s" : ""} to tasks.`,
+		);
+	}
+
 	async syncMeetings(manual = false): Promise<void> {
 		if (this.isSyncing) return;
 		this.isSyncing = true;
@@ -348,6 +383,12 @@ export default class GranolaSyncPlugin extends Plugin {
 				}
 
 				const meetingData = buildMeetingData(details, transcript);
+				if (this.settings.taskOwnerName) {
+					meetingData.enhancedNotes = convertNextStepsTasks(
+						meetingData.enhancedNotes,
+						this.settings.taskOwnerName,
+					);
+				}
 				const content = applyTemplate(template, meetingData, emailToNoteTitle);
 				const existingFile = existingDocs.get(details.id);
 
